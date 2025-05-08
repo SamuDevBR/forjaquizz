@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Queremos te conhecer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0c0000, #ff0000);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      text-align: center;
+    }
+    #video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      z-index: 1;
+      overflow: hidden;
+    }
+    #video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+    #logo-container {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      z-index: 3;
+      display: none;
+    }
+    #logo-container img { height: 35px; }
+    .form-container {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 40px;
+      border-radius: 20px;
+      max-width: 600px;
+      width: 90%;
+      z-index: 2;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      position: relative;
+      margin-top: 80px;
+    }
+    .progress-bar {
+      width: 100%;
+      background-color: #444;
+      border-radius: 10px;
+      height: 10px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .progress {
+      height: 100%;
+      width: 0%;
+      background-color: #4CAF50;
+      transition: width 0.4s ease-in-out;
+    }
+    .question {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeIn 0.5s ease;
+      text-align: center;
+    }
+    .question.active { display: flex; }
+    input, select, textarea {
+      padding: 12px;
+      font-size: 16px;
+      width: 100%;
+      max-width: 400px;
+      margin: 15px 0;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    button {
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      padding: 12px 25px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 10px;
+      transition: background-color 0.3s;
+    }
+    button:hover { background-color: #45a049; }
+    #top-title, #bottom-text { display: none; z-index: 2; }
+    #top-title {
+      font-size: 17px;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    #bottom-text {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    #loading-message {
+      display: none;
+      font-size: 18px;
+      margin-top: 20px;
+      color: #fff;
+      text-align: center;
+    }
+    .spinner {
+      border: 4px solid #fff;
+      border-top: 4px solid #4CAF50;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 10px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error-message {
+      color: #ff6b6b;
+      font-size: 14px;
+      height: 18px;
+      margin-top: 4px;
+      transition: opacity 0.3s;
+    }
+
+    .textinho {
+      color: #000000;
+    }
+  </style>
+</head>
+<body>
+  <div id="logo-container"><img src="logo.png" alt="Logo"></div>
+
+  <div id="video-container">
+    <iframe id="vimeo-video" src="https://player.vimeo.com/video/1081478738?autoplay=1&amp;title=0&amp;byline=0&amp;portrait=0" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  </div>
+
+  <div id="top-title"></div>
+  <div class="form-container" id="form-container">
+    <div class="progress-bar"><div class="progress" id="progress-bar"></div></div>
+    <form id="multi-step-form">
+      <div class="question active">
+        <label>Qual é a sua idade?</label>
+        <input type="text" name="idade" required>
+        <div class="error-message"></div>
+      </div>
+
+      <div class="question">
+        <label>Qual o seu estado civil?</label>
+        <select name="estado_civil" required>
+          <option value="">Selecione</option>
+          <option value="Solteiro">Solteiro</option>
+          <option value="Casado">Casado</option>
+          <option value="Divorciado">Divorciado</option>
+          <option value="Viúvo">Viúvo</option>
+        </select>
+        <div class="error-message"></div>
+      </div>
+
+      <div class="question">
+        <label>Em qual cidade você mora?</label>
+        <select name="cidade" onchange="mostrarOutraCidade(this)">
+          <option value="">Selecione</option>
+          <option value="Araçatuba">Araçatuba</option>
+          <option value="Braúna">Braúna</option>
+          <option value="Birigui">Birigui</option>
+          <option value="Bilac">Bilac</option>
+          <option value="Buritama">Buritama</option>
+          <option value="Clementina">Clementina</option>
+          <option value="Guararapes">Guararapes</option>
+          <option value="Penápolis">Penápolis</option>
+          <option value="Presidente Prudente">Presidente Prudente</option>
+          <option value="Promissão">Promissão</option>
+          <option value="Valparaíso">Valparaíso</option>
+          <option value="Outra">Outra</option>
+        </select>
+        <input type="text" id="outra-cidade" name="outraCidade" placeholder="Digite sua cidade" style="display:none;">
+        <div class="error-message"></div>
+      </div>
+
+      <div class="question">
+        <label>Como homem, qual tem sido a sua maior luta ou dificuldade?<br><br><small>(Ex: imoralidade sexual, falta de identidade, crise financeira, ansiedade, solidão, vícios, autocobrança, etc.) Nos descreva:</small></label>
+        <textarea name="dificuldade" required></textarea>
+        <div class="error-message"></div>
+      </div>
+
+      <div class="question">
+        <label>Você já tentou enfrentar essa dificuldade de alguma forma?<br><br><small>(Ex: oração, jejum, terapia, conversar com amigos, leitura da Bíblia, etc.) Nos descreva:</small></label>
+        <textarea name="estrategia" required></textarea>
+        <div class="error-message"></div>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <button type="button" id="prevBtn">Voltar</button>
+        <button type="button" id="nextBtn">Próximo</button>
+        <button type="submit" id="submitBtn" style="display: none;">Enviar</button>
+      </div>
+    </form>
+    <div id="loading-message">
+      <div class="spinner"></div>
+      <p>Enviando...</p>
+    </div>
+  </div>
+  <div id="bottom-text">
+    <p>Você não será identificado. 🔐</p><p class="textinho">Sua resposta é importante para que <br> você e outros homens sejam forjados.</p>
+  </div>
+  <script src="https://player.vimeo.com/api/player.js"></script>
+  <script>
+    const iframe = document.getElementById('vimeo-video');
+    const player = new Vimeo.Player(iframe);
+    const formContainer = document.getElementById('form-container');
+    const loadingMessage = document.getElementById('loading-message');
+
+    function ajustarAlturaVideo() {
+      const alturaReal = window.innerHeight + 'px';
+      document.getElementById('video-container').style.height = alturaReal;
+      document.getElementById('vimeo-video').style.height = alturaReal;
+    }
+
+    window.addEventListener('load', ajustarAlturaVideo);
+    window.addEventListener('resize', ajustarAlturaVideo);
+
+    player.on('ended', function () {
+      document.getElementById('video-container').style.display = 'none';
+      formContainer.style.display = 'flex';
+      document.getElementById('logo-container').style.display = 'block';
+      document.getElementById('top-title').style.display = 'block';
+      document.getElementById('bottom-text').style.display = 'block';
+    });
+
+    const questions = document.querySelectorAll('.question');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const progressBar = document.getElementById('progress-bar');
+    let currentStep = 0;
+
+    function showStep(index) {
+      questions.forEach((q, i) => q.classList.toggle('active', i === index));
+      prevBtn.style.display = index === 0 ? 'none' : 'inline-block';
+      nextBtn.style.display = index === questions.length - 1 ? 'none' : 'inline-block';
+      submitBtn.style.display = index === questions.length - 1 ? 'inline-block' : 'none';
+      updateProgress(index);
+    }
+
+    function updateProgress(index) {
+      const percent = ((index + 1) / questions.length) * 100;
+      progressBar.style.width = percent + '%';
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+    }
+
+    nextBtn.addEventListener('click', () => {
+      clearErrors();
+      const currentQuestion = questions[currentStep];
+      const input = currentQuestion.querySelector('input, select, textarea');
+      const errorContainer = currentQuestion.querySelector('.error-message');
+
+      if (input && input.value.trim() === '') {
+        errorContainer.textContent = 'Por favor, preencha este campo.';
+        return;
+      }
+
+      if (input.tagName === 'SELECT' && input.value === '') {
+        errorContainer.textContent = 'Por favor, selecione uma opção.';
+        return;
+      }
+
+      if (currentStep < questions.length - 1) {
+        currentStep++;
+        showStep(currentStep);
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentStep > 0) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    });
+
+    function mostrarOutraCidade(select) {
+      const outraInput = document.getElementById('outra-cidade');
+      outraInput.style.display = select.value === 'Outra' ? 'block' : 'none';
+    }
+
+    document.getElementById('multi-step-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+
+      if (formData.get("cidade") === "Outra") {
+        formData.set("cidade", formData.get("outraCidade") || "Não informado");
+      }
+
+      this.style.display = 'none';
+      loadingMessage.style.display = 'block';
+
+      fetch('https://script.google.com/macros/s/AKfycbzbtlMoAiBqgte2btmVn5EWMFtWqKQyyPsiECqywRhjTQ0MmbtAMVeThHjP9N0PMX8X/exec', {
+        method: 'POST',
+        body: formData
+      }).then(response => {
+        formContainer.innerHTML = "<h2>Obrigado por responder! 👊🏼</h2><a href='https://chat.whatsapp.com/FHZjrEZuDdLIzc43k8YK40?fbclid=PAZXh0bgNhZW0CMTEAAadgl53QtDVgN42q2py5lQLYq9YOM56xTW_QA_jTBsKcYsCyz3yJwC6fhA16cQ_aem_FiHnyeAFNUXHViZN_JRBrQ' target='_blank'><button>Entrar no grupo do WhatsApp</button></a>";
+        document.getElementById('bottom-text').style.display = 'none';
+        document.getElementById('top-title').style.display = 'none';
+      }).catch(error => {
+        alert('Erro ao enviar os dados.');
+        console.error(error);
+      });
+    });
+
+    showStep(currentStep);
+  </script>
+</body>
+</html>
